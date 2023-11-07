@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import validateForm from '../../helpers/validateForm';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +12,7 @@ export class LoginComponent {
 
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -21,21 +23,21 @@ export class LoginComponent {
 
   onSubmit() {
     if(this.loginForm.valid) {
-      console.log(this.loginForm.value);
+      // console.log(this.loginForm.value);
       // Enviar os dados a API
+      this.auth.login(this.loginForm.value)
+      .subscribe({
+        next:(res)=>{
+          alert(res.message)
+        },
+        error:(err)=>{
+          alert(err?.error.message)
+        }
+      });
     }else{
       // Exibir uma mensagem de erro
+      validateForm.validateAllFormFields(this.loginForm)
     }
   }
 
-  private validateAllFormFields(formGroup: FormGroup){
-    Object.keys(formGroup.controls).forEach(field => {
-      const control = formGroup.get(field);
-      if (control instanceof FormControl){
-        control.markAsDirty({onlySelf:true})
-      }else if(control instanceof FormGroup){
-        this.validateAllFormFields(control)
-      }
-    })
-  }
 }
